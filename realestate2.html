@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAVEN — Real Estate</title>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Mulish:ital,wght@0,200;0,300;0,400;0,600;1,200;1,300&family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;1,6..96,300;1,6..96,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:auto;}
+:root{
+  --ivory:#FAF8F4;
+  --ivory2:#F4F0E8;
+  --ivory3:#EDE7DC;
+  --blush:#E8C4BC;
+  --blush2:#D4A89C;
+  --blush3:#C08878;
+  --sage:#B8C4B0;
+  --sage2:#9AAA90;
+  --sage3:#7A8A70;
+  --dust:#D4C8B8;
+  --dust2:#C0B0A0;
+  --ink:#1C1814;
+  --ink2:#2C2420;
+  --mid:#7A6E64;
+  --light:#A89E94;
+  --border:rgba(28,24,20,.07);
+  --border2:rgba(28,24,20,.12);
+  --f1:'Italiana',serif;
+  --f2:'Mulish',sans-serif;
+  --f3:'Bodoni Moda',serif;
+}
+html,body{background:var(--ivory);color:var(--ink);font-family:var(--f2);overflow-x:hidden;cursor:none;}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:6px;height:6px;background:var(--blush3);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+#cur-ring{position:fixed;width:32px;height:32px;border:1px solid var(--blush2);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .25s ease;}
+body.hov #cur-ring{width:56px;height:56px;border-color:var(--blush3);background:rgba(232,196,188,.08);}
+
+/* ── GRAIN ── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:8000;opacity:.5;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");}
+
+/* ── PROGRESS ── */
+#prog{position:fixed;top:0;left:0;height:1px;background:linear-gradient(90deg,var(--blush2),var(--sage2));z-index:9997;width:0;}
+
+/* ══════════════════════════════════
+   PRELOADER — SPLIT CURTAIN REVEAL
+══════════════════════════════════ */
+#preloader{position:fixed;inset:0;z-index:9990;pointer-events:none;}
+.pre-left{position:absolute;top:0;left:0;width:50%;height:100%;background:var(--blush);display:flex;align-items:center;justify-content:flex-end;padding-right:40px;transition:transform 1s cubic-bezier(.77,0,.18,1);}
+.pre-right{position:absolute;top:0;right:0;width:50%;height:100%;background:var(--sage);display:flex;align-items:center;justify-content:flex-start;padding-left:40px;transition:transform 1s cubic-bezier(.77,0,.18,1);}
+.pre-word-left{font-family:var(--f1);font-size:clamp(48px,7vw,110px);color:var(--ivory);letter-spacing:.12em;line-height:1;text-align:right;opacity:0;transform:translateX(-20px);transition:all .6s ease .3s;}
+.pre-word-right{font-family:var(--f1);font-size:clamp(48px,7vw,110px);color:var(--ivory);letter-spacing:.12em;line-height:1;text-align:left;opacity:0;transform:translateX(20px);transition:all .6s ease .3s;}
+.pre-sub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--f2);font-size:10px;color:var(--ivory);letter-spacing:.5em;text-transform:uppercase;font-weight:300;opacity:0;white-space:nowrap;transition:opacity .4s ease .5s;z-index:2;}
+.pre-line{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:1px;height:0;background:rgba(250,248,244,.3);transition:height .7s ease .2s;z-index:2;}
+#preloader.active .pre-word-left{opacity:1;transform:translateX(0);}
+#preloader.active .pre-word-right{opacity:1;transform:translateX(0);}
+#preloader.active .pre-sub{opacity:1;}
+#preloader.active .pre-line{height:80px;}
+#preloader.open .pre-left{transform:translateX(-100%);}
+#preloader.open .pre-right{transform:translateX(100%);}
+#preloader.open .pre-sub{opacity:0;}
+#preloader.open .pre-line{opacity:0;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:600;padding:36px 68px;display:flex;align-items:center;justify-content:space-between;transition:all .5s;}
+nav.scrolled{background:rgba(250,248,244,.92);backdrop-filter:blur(20px);padding:18px 68px;border-bottom:1px solid var(--border2);}
+.nav-logo{text-decoration:none;display:flex;flex-direction:column;}
+.nav-logo-name{font-family:var(--f1);font-size:24px;color:var(--ink);letter-spacing:.2em;line-height:1;}
+.nav-logo-tag{font-family:var(--f2);font-size:8px;color:var(--blush3);letter-spacing:.5em;text-transform:uppercase;font-weight:300;margin-top:3px;}
+.nav-links{display:flex;gap:40px;align-items:center;}
+.nav-a{font-family:var(--f2);font-size:10px;color:var(--mid);text-decoration:none;letter-spacing:.18em;text-transform:uppercase;font-weight:300;transition:color .25s;}
+.nav-a:hover{color:var(--ink);}
+.nav-btn{font-family:var(--f2);font-size:9px;color:var(--ivory);background:var(--ink);padding:13px 26px;text-decoration:none;letter-spacing:.18em;text-transform:uppercase;font-weight:300;border:1px solid var(--ink);transition:all .3s;}
+.nav-btn:hover{background:var(--blush3);border-color:var(--blush3);}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:grid;grid-template-rows:1fr auto;padding:140px 68px 0;position:relative;overflow:hidden;}
+.hero-bg-circle{position:absolute;top:-20%;right:-15%;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(232,196,188,.25) 0%,transparent 70%);pointer-events:none;}
+.hero-bg-circle2{position:absolute;bottom:-10%;left:-10%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(184,196,176,.2) 0%,transparent 70%);pointer-events:none;}
+.hero-top{display:grid;grid-template-columns:1fr auto;align-items:end;gap:60px;padding-bottom:48px;border-bottom:1px solid var(--border2);}
+.hero-title-wrap{}
+.hero-eyebrow{font-family:var(--f2);font-size:9px;color:var(--blush3);letter-spacing:.45em;text-transform:uppercase;font-weight:300;margin-bottom:28px;display:flex;align-items:center;gap:14px;opacity:0;animation:fup .8s ease 2.4s forwards;}
+.hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--blush2);}
+.hero-h1{font-family:var(--f1);font-size:clamp(64px,9vw,160px);line-height:.85;letter-spacing:-.005em;}
+.hero-h1-line{overflow:hidden;display:block;}
+.hero-h1-span{display:block;transform:translateY(110%);animation:sup 1s cubic-bezier(.16,1,.3,1) forwards;}
+.hero-h1-line:nth-child(1) .hero-h1-span{animation-delay:2.3s;}
+.hero-h1-line:nth-child(2) .hero-h1-span{animation-delay:2.45s;padding-left:80px;}
+.hero-h1-line:nth-child(3) .hero-h1-span{animation-delay:2.6s;}
+.hero-h1 em{font-style:italic;color:var(--blush3);}
+.hero-right-col{display:flex;flex-direction:column;justify-content:flex-end;gap:12px;min-width:240px;padding-bottom:12px;opacity:0;animation:fup .8s ease 2.9s forwards;}
+.hero-tag-pill{display:inline-flex;align-items:center;gap:8px;background:var(--blush);border:1px solid var(--blush2);padding:8px 16px;font-family:var(--f2);font-size:9px;color:var(--ink);letter-spacing:.15em;text-transform:uppercase;font-weight:300;border-radius:100px;}
+.hero-tag-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--blush3);}
+.hero-tag-pill.sage-pill{background:rgba(184,196,176,.3);border-color:var(--sage2);}
+.hero-tag-pill.sage-pill .dot{background:var(--sage3);}
+.hero-desc{font-size:14px;color:var(--mid);line-height:1.9;font-weight:300;max-width:300px;margin-top:8px;}
+.hero-bottom{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:40px;padding:32px 0 60px;}
+.hero-scroll-hint{display:flex;align-items:center;gap:12px;opacity:0;animation:fup .6s ease 3.1s forwards;}
+.hero-scroll-hint span{font-family:var(--f2);font-size:9px;color:var(--light);letter-spacing:.25em;text-transform:uppercase;font-weight:300;}
+.hero-tick{width:40px;height:1px;background:linear-gradient(90deg,var(--blush2),transparent);}
+.hero-stat-row{display:flex;justify-content:center;gap:48px;opacity:0;animation:fup .8s ease 3s forwards;}
+.h-stat{text-align:center;}
+.h-stat-num{font-family:var(--f1);font-size:36px;color:var(--ink);line-height:1;display:block;}
+.h-stat-label{font-family:var(--f2);font-size:8px;color:var(--light);letter-spacing:.2em;text-transform:uppercase;font-weight:300;margin-top:4px;display:block;}
+.hero-cta-wrap{display:flex;gap:10px;opacity:0;animation:fup .8s ease 3s forwards;justify-content:flex-end;}
+.btn-blush{background:var(--blush3);color:var(--ivory);font-family:var(--f2);font-size:9px;font-weight:300;padding:16px 32px;text-decoration:none;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--blush3);transition:all .3s;display:inline-block;}
+.btn-blush:hover{background:var(--ink);border-color:var(--ink);transform:translateY(-2px);}
+.btn-light{background:transparent;color:var(--ink);font-family:var(--f2);font-size:9px;font-weight:300;padding:16px 32px;text-decoration:none;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--border2);transition:all .3s;display:inline-block;}
+.btn-light:hover{border-color:var(--ink);transform:translateY(-2px);}
+@keyframes fup{to{opacity:1;transform:translateY(0);}}
+@keyframes sup{to{transform:translateY(0);}}
+
+/* ── MARQUEE ── */
+.mq{overflow:hidden;background:var(--ivory2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 0;}
+.mq-track{display:flex;width:max-content;animation:mqr 32s linear infinite;}
+.mq-item{font-family:var(--f3);font-style:italic;font-size:14px;color:rgba(28,24,20,.18);padding:0 44px;white-space:nowrap;letter-spacing:.06em;}
+.mq-mark{color:var(--blush2);opacity:.6;font-size:10px;font-style:normal;}
+@keyframes mqr{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ── FEATURED LISTINGS ── */
+#listings{padding:120px 68px;}
+.sec-eyebrow{font-family:var(--f2);font-size:9px;color:var(--blush3);letter-spacing:.45em;text-transform:uppercase;font-weight:300;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.sec-eyebrow::before{content:'';width:24px;height:1px;background:var(--blush2);}
+.sec-h{font-family:var(--f1);font-size:clamp(44px,5.5vw,88px);line-height:.9;margin-bottom:0;}
+.sec-h em{font-style:italic;color:var(--blush3);}
+.listings-header{display:grid;grid-template-columns:1fr auto;align-items:end;margin-bottom:60px;gap:40px;}
+.listings-filter{display:flex;gap:8px;align-items:center;}
+.filter-btn{font-family:var(--f2);font-size:9px;color:var(--mid);border:1px solid var(--border2);padding:8px 18px;background:transparent;cursor:pointer;letter-spacing:.15em;text-transform:uppercase;font-weight:300;transition:all .25s;}
+.filter-btn.active,.filter-btn:hover{background:var(--ink);color:var(--ivory);border-color:var(--ink);}
+/* Magazine-style grid */
+.listings-mag{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:360px 300px;gap:12px;}
+.lm-item{position:relative;overflow:hidden;background:var(--ivory3);cursor:pointer;}
+.lm-item:nth-child(1){grid-column:1/6;grid-row:1/3;}
+.lm-item:nth-child(2){grid-column:6/9;grid-row:1;}
+.lm-item:nth-child(3){grid-column:9/13;grid-row:1;}
+.lm-item:nth-child(4){grid-column:6/10;grid-row:2;}
+.lm-item:nth-child(5){grid-column:10/13;grid-row:2;}
+.lm-bg{position:absolute;inset:0;transition:transform .7s cubic-bezier(.22,1,.36,1);}
+.lm-item:hover .lm-bg{transform:scale(1.05);}
+.lm-tint{position:absolute;inset:0;background:linear-gradient(to top,rgba(28,24,20,.75) 0%,rgba(28,24,20,.1) 45%,transparent 70%);opacity:0;transition:opacity .4s;}
+.lm-item:hover .lm-tint{opacity:1;}
+.lm-info{position:absolute;bottom:0;left:0;right:0;padding:24px 22px;transform:translateY(6px);transition:transform .35s;}
+.lm-item:hover .lm-info{transform:translateY(0);}
+.lm-status{font-family:var(--f2);font-size:8px;color:var(--blush);letter-spacing:.25em;text-transform:uppercase;font-weight:300;margin-bottom:5px;opacity:0;transition:opacity .3s .1s;}
+.lm-item:hover .lm-status{opacity:1;}
+.lm-name{font-family:var(--f1);font-size:clamp(18px,2vw,28px);color:var(--ivory);line-height:1.1;}
+.lm-price{font-family:var(--f3);font-style:italic;font-size:16px;color:rgba(232,196,188,.9);margin-top:4px;}
+.lm-meta{font-family:var(--f2);font-size:9px;color:rgba(250,248,244,.4);letter-spacing:.1em;margin-top:4px;font-weight:300;}
+.lm-badge{position:absolute;top:16px;right:16px;font-family:var(--f2);font-size:8px;letter-spacing:.18em;text-transform:uppercase;padding:6px 12px;font-weight:300;}
+.lm-badge.new{background:var(--blush3);color:var(--ivory);}
+.lm-badge.excl{background:var(--sage2);color:var(--ivory);}
+
+/* ── PHILOSOPHY ── */
+#philosophy{padding:120px 68px;background:var(--ivory2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center;}
+.phil-left{}
+.phil-label{font-family:var(--f2);font-size:9px;color:var(--blush3);letter-spacing:.45em;text-transform:uppercase;font-weight:300;margin-bottom:20px;display:flex;align-items:center;gap:14px;}
+.phil-label::before{content:'';width:24px;height:1px;background:var(--blush2);}
+.phil-h{font-family:var(--f1);font-size:clamp(40px,4.5vw,72px);line-height:.92;margin-bottom:32px;}
+.phil-h em{font-style:italic;color:var(--blush3);}
+.phil-body{font-size:15px;color:var(--mid);line-height:2;font-weight:300;margin-bottom:16px;}
+.phil-sig{font-family:var(--f3);font-style:italic;font-size:24px;color:var(--ink);margin-top:36px;padding-top:28px;border-top:1px solid var(--border2);}
+.phil-sig small{display:block;font-family:var(--f2);font-style:normal;font-size:9px;color:var(--light);letter-spacing:.2em;text-transform:uppercase;font-weight:300;margin-top:4px;}
+.phil-right{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.phil-card{padding:32px 28px;border:1px solid var(--border2);background:var(--ivory);position:relative;overflow:hidden;transition:all .3s;}
+.phil-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blush2),var(--sage2));transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+.phil-card:hover{background:var(--ivory3);}
+.phil-card:hover::before{transform:scaleX(1);}
+.pc-num{font-family:var(--f1);font-size:48px;color:rgba(232,196,188,.25);line-height:1;margin-bottom:12px;}
+.pc-title{font-family:var(--f1);font-size:20px;margin-bottom:8px;}
+.pc-desc{font-family:var(--f2);font-size:12px;color:var(--light);line-height:1.7;font-weight:300;}
+.phil-stat-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;background:var(--border);margin-top:2px;}
+.psr-item{background:var(--ivory2);padding:24px 20px;text-align:center;}
+.psr-num{font-family:var(--f1);font-size:36px;color:var(--blush3);display:block;line-height:1;}
+.psr-label{font-family:var(--f2);font-size:8px;color:var(--light);letter-spacing:.18em;text-transform:uppercase;font-weight:300;margin-top:4px;display:block;}
+
+/* ── SERVICES ── */
+#services{padding:120px 68px;}
+.svc-header{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;margin-bottom:72px;}
+.svc-note{font-size:14px;color:var(--mid);line-height:1.9;font-weight:300;align-self:end;}
+.svc-list{display:grid;grid-template-columns:1fr;gap:0;}
+.svc-row{display:grid;grid-template-columns:60px 1fr 120px 40px;align-items:center;gap:32px;padding:28px 0;border-bottom:1px solid var(--border);cursor:pointer;position:relative;transition:padding .3s;}
+.svc-row::before{content:'';position:absolute;left:-68px;right:-68px;top:0;bottom:0;background:var(--ivory2);opacity:0;transition:opacity .3s;z-index:0;}
+.svc-row:hover::before{opacity:1;}
+.svc-row:hover{padding-left:12px;}
+.svc-idx{font-family:var(--f2);font-size:10px;color:rgba(232,196,188,.6);letter-spacing:.15em;position:relative;z-index:1;}
+.svc-mid{position:relative;z-index:1;}
+.svc-name{font-family:var(--f1);font-size:clamp(20px,2vw,30px);color:var(--ink);margin-bottom:3px;}
+.svc-sub{font-family:var(--f2);font-size:10px;color:var(--light);letter-spacing:.1em;font-weight:300;}
+.svc-price{font-family:var(--f3);font-style:italic;font-size:16px;color:var(--blush3);position:relative;z-index:1;text-align:right;}
+.svc-arr{font-size:18px;color:var(--dust2);transition:all .3s;position:relative;z-index:1;opacity:0;}
+.svc-row:hover .svc-arr{opacity:1;transform:translateX(6px);color:var(--blush3);}
+
+/* ── TEAM ── */
+#team{padding:120px 68px;background:var(--ivory2);border-top:1px solid var(--border);}
+.team-header{text-align:center;margin-bottom:72px;}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.agent-card{background:var(--ivory);border:1px solid var(--border);overflow:hidden;transition:all .35s;}
+.agent-card:hover{border-color:var(--blush2);box-shadow:0 20px 60px rgba(28,24,20,.08);}
+.agent-photo{aspect-ratio:4/5;position:relative;overflow:hidden;background:var(--ivory3);}
+.agent-photo-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform .6s ease;}
+.agent-card:hover .agent-photo-bg{transform:scale(1.04);}
+.agent-initial{font-family:var(--f1);font-size:clamp(60px,8vw,120px);color:rgba(232,196,188,.15);}
+.agent-tint{position:absolute;inset:0;background:linear-gradient(to top,rgba(28,24,20,.4),transparent);opacity:0;transition:opacity .3s;}
+.agent-card:hover .agent-tint{opacity:1;}
+.agent-info{padding:28px 24px;}
+.agent-name{font-family:var(--f1);font-size:24px;margin-bottom:4px;}
+.agent-role{font-family:var(--f2);font-size:9px;color:var(--blush3);letter-spacing:.2em;text-transform:uppercase;font-weight:300;margin-bottom:12px;}
+.agent-bio{font-size:13px;color:var(--mid);line-height:1.8;font-weight:300;}
+.agent-stats{display:flex;gap:0;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;}
+.ag-stat{flex:1;text-align:center;}
+.ag-stat-num{font-family:var(--f1);font-size:22px;color:var(--blush3);display:block;}
+.ag-stat-label{font-family:var(--f2);font-size:8px;color:var(--light);letter-spacing:.15em;text-transform:uppercase;font-weight:300;display:block;margin-top:2px;}
+
+/* ── TESTIMONIALS ── */
+#testimonials{padding:120px 68px;}
+.testi-wrap{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.testi-left-col{}
+.testi-featured{background:var(--blush);padding:52px 44px;position:relative;overflow:hidden;}
+.testi-featured::before{content:'\201C';font-family:var(--f1);font-size:160px;color:rgba(250,248,244,.15);position:absolute;top:-20px;left:16px;line-height:1;}
+.tf-stars{font-size:12px;letter-spacing:4px;margin-bottom:24px;}
+.tf-q{font-family:var(--f3);font-style:italic;font-size:clamp(18px,2vw,24px);color:var(--ink);line-height:1.6;margin-bottom:32px;position:relative;z-index:1;}
+.tf-rule{width:32px;height:1px;background:var(--blush3);margin-bottom:20px;}
+.tf-name{font-family:var(--f1);font-size:20px;color:var(--ink);}
+.tf-role{font-family:var(--f2);font-size:9px;color:var(--mid);letter-spacing:.15em;text-transform:uppercase;font-weight:300;margin-top:3px;}
+.testi-right-col{display:flex;flex-direction:column;gap:16px;}
+.testi-mini{background:var(--ivory2);border:1px solid var(--border);padding:28px 24px;transition:all .3s;}
+.testi-mini:hover{border-color:var(--blush2);background:var(--ivory);}
+.tm-stars{font-size:10px;letter-spacing:3px;color:var(--blush2);margin-bottom:12px;}
+.tm-q{font-size:13px;color:var(--mid);line-height:1.8;font-style:italic;font-family:var(--f2);font-weight:300;margin-bottom:14px;}
+.tm-name{font-family:var(--f1);font-size:16px;color:var(--ink);}
+.tm-role{font-family:var(--f2);font-size:9px;color:var(--light);letter-spacing:.12em;text-transform:uppercase;font-weight:300;margin-top:2px;}
+
+/* ── CONTACT ── */
+#contact{padding:120px 68px;background:var(--ivory2);border-top:1px solid var(--border);}
+.contact-wrap{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:start;}
+.contact-left{}
+.contact-form-wrap{background:var(--ivory);border:1px solid var(--border2);padding:52px 44px;}
+.cf-title{font-family:var(--f1);font-size:32px;margin-bottom:36px;color:var(--ink);}
+.cf-form{display:flex;flex-direction:column;gap:2px;}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.cf-g{display:flex;flex-direction:column;background:var(--ivory2);}
+.cf-label{font-family:var(--f2);font-size:8px;color:var(--blush3);letter-spacing:.22em;text-transform:uppercase;font-weight:300;padding:12px 16px 0;}
+.cf-input,.cf-select,.cf-area{background:transparent;border:none;border-bottom:1px solid transparent;color:var(--ink);font-family:var(--f3);font-style:italic;font-size:15px;padding:6px 16px 12px;outline:none;transition:border-color .25s;width:100%;-webkit-appearance:none;}
+.cf-input:focus,.cf-select:focus,.cf-area:focus{border-bottom-color:var(--blush2);}
+.cf-input::placeholder,.cf-area::placeholder{color:var(--dust2);font-style:italic;}
+.cf-select option{background:var(--ivory2);}
+.cf-area{resize:none;height:90px;}
+.cf-full{grid-column:1/-1;}
+.btn-submit{background:var(--ink);color:var(--ivory);font-family:var(--f2);font-size:9px;font-weight:300;padding:19px;border:none;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;transition:all .3s;width:100%;margin-top:4px;}
+.btn-submit:hover{background:var(--blush3);}
+#formSuccess{display:none;padding:48px;text-align:center;background:rgba(184,196,176,.15);border:1px solid var(--sage2);}
+.fs-icon{font-size:32px;margin-bottom:12px;}
+.fs-title{font-family:var(--f1);font-style:italic;font-size:28px;color:var(--blush3);margin-bottom:8px;}
+.fs-body{font-size:14px;color:var(--mid);line-height:1.8;font-weight:300;}
+.contact-info{padding-top:20px;}
+.ci-label{font-family:var(--f2);font-size:9px;color:var(--blush3);letter-spacing:.45em;text-transform:uppercase;font-weight:300;margin-bottom:16px;display:flex;align-items:center;gap:14px;}
+.ci-label::before{content:'';width:24px;height:1px;background:var(--blush2);}
+.ci-title{font-family:var(--f1);font-size:clamp(36px,4vw,64px);line-height:.9;margin-bottom:32px;}
+.ci-title em{font-style:italic;color:var(--blush3);}
+.ci-body{font-size:14px;color:var(--mid);line-height:2;font-weight:300;margin-bottom:40px;}
+.ci-items{display:flex;flex-direction:column;gap:18px;}
+.ci-item{display:flex;align-items:center;gap:16px;}
+.ci-dot{width:8px;height:8px;border-radius:50%;background:var(--blush2);flex-shrink:0;}
+.ci-text{font-size:14px;color:var(--ink);font-weight:300;}
+.ci-text small{display:block;font-family:var(--f2);font-size:9px;color:var(--light);letter-spacing:.15em;text-transform:uppercase;font-weight:300;margin-bottom:2px;}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);padding:100px 68px 48px;}
+.footer-top{display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr;gap:72px;margin-bottom:72px;padding-bottom:72px;border-bottom:1px solid rgba(255,255,255,.06);}
+.f-brand-name{font-family:var(--f1);font-size:28px;color:var(--ivory);letter-spacing:.2em;display:block;margin-bottom:4px;}
+.f-brand-sub{font-family:var(--f2);font-size:8px;color:var(--blush2);letter-spacing:.5em;text-transform:uppercase;font-weight:300;display:block;margin-bottom:20px;}
+.f-tagline{font-size:13px;color:rgba(250,248,244,.28);line-height:1.9;max-width:230px;font-weight:300;margin-bottom:28px;}
+.f-socials{display:flex;gap:8px;}
+.f-soc{width:38px;height:38px;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(250,248,244,.28);text-decoration:none;font-family:var(--f2);font-size:9px;letter-spacing:.04em;font-weight:300;transition:all .25s;}
+.f-soc:hover{border-color:var(--blush2);color:var(--blush2);}
+.f-col h4{font-family:var(--f2);font-size:8px;color:var(--blush2);letter-spacing:.35em;text-transform:uppercase;font-weight:300;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.05);}
+.f-col a{display:block;font-size:13px;color:rgba(250,248,244,.28);text-decoration:none;margin-bottom:10px;font-family:var(--f2);font-weight:300;letter-spacing:.03em;transition:color .25s;}
+.f-col a:hover{color:var(--ivory);}
+.f-col address{font-size:13px;color:rgba(250,248,244,.28);line-height:2;font-style:normal;font-family:var(--f2);font-weight:300;}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+.f-copy{font-family:var(--f2);font-size:9px;color:rgba(250,248,244,.18);letter-spacing:.1em;font-weight:300;}
+.f-legal{display:flex;gap:28px;}
+.f-legal a{font-family:var(--f2);font-size:9px;color:rgba(250,248,244,.18);text-decoration:none;letter-spacing:.1em;font-weight:300;transition:color .2s;}
+.f-legal a:hover{color:var(--ivory);}
+
+/* ── GSAP INITS ── */
+.gf{opacity:0;transform:translateY(32px);}
+.gfl{opacity:0;transform:translateX(-32px);}
+.gfr{opacity:0;transform:translateX(32px);}
+.gs{opacity:0;transform:scale(.96);}
+
+@media(max-width:960px){
+  nav{padding:18px 24px;}
+  .nav-links{display:none;}
+  #hero{padding:120px 24px 0;}
+  .hero-top{grid-template-columns:1fr;}
+  .hero-h1-line:nth-child(2) .hero-h1-span{padding-left:0;}
+  .hero-bottom{grid-template-columns:1fr;}
+  #listings{padding:80px 24px;}
+  .listings-mag{grid-template-columns:1fr;grid-template-rows:auto;}
+  .lm-item{grid-column:auto!important;grid-row:auto!important;aspect-ratio:4/3;}
+  #philosophy{grid-template-columns:1fr;padding:80px 24px;gap:48px;}
+  #services{padding:80px 24px;}
+  .svc-header{grid-template-columns:1fr;}
+  .svc-row{grid-template-columns:40px 1fr auto;}
+  #team{padding:80px 24px;}
+  .team-grid{grid-template-columns:1fr;}
+  #testimonials{padding:80px 24px;}
+  .testi-wrap{grid-template-columns:1fr;}
+  #contact{padding:80px 24px;}
+  .contact-wrap{grid-template-columns:1fr;}
+  footer{padding:60px 24px 32px;}
+  .footer-top{grid-template-columns:1fr;gap:40px;}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="prog"></div>
+
+<!-- ══ PRELOADER: SPLIT CURTAIN ══ -->
+<div id="preloader">
+  <div class="pre-left"><div class="pre-word-left">HA</div></div>
+  <div class="pre-right"><div class="pre-word-right">VEN</div></div>
+  <div class="pre-line"></div>
+  <div class="pre-sub">Luxury Real Estate</div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <span class="nav-logo-name">HAVEN</span>
+    <span class="nav-logo-tag">Luxury Real Estate</span>
+  </a>
+  <div class="nav-links">
+    <a href="#listings" class="nav-a">Properties</a>
+    <a href="#philosophy" class="nav-a">About</a>
+    <a href="#services" class="nav-a">Services</a>
+    <a href="#team" class="nav-a">Team</a>
+    <a href="#contact" class="nav-btn">Enquire</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-circle"></div>
+  <div class="hero-bg-circle2"></div>
+  <div class="hero-top">
+    <div class="hero-title-wrap">
+      <div class="hero-eyebrow">Est. 2010 &nbsp;&bull;&nbsp; Hamptons, New York</div>
+      <h1 class="hero-h1">
+        <span class="hero-h1-line"><span class="hero-h1-span">Where</span></span>
+        <span class="hero-h1-line"><span class="hero-h1-span"><em>Home</em></span></span>
+        <span class="hero-h1-line"><span class="hero-h1-span">Begins.</span></span>
+      </h1>
+    </div>
+    <div class="hero-right-col">
+      <div class="hero-tag-pill"><div class="dot"></div>New Listings Available</div>
+      <div class="hero-tag-pill sage-pill"><div class="dot"></div>Off-Market Properties</div>
+      <p class="hero-desc">Curated homes for the discerning buyer. Every property chosen with intention.</p>
+    </div>
+  </div>
+  <div class="hero-bottom">
+    <div class="hero-scroll-hint">
+      <div class="hero-tick"></div>
+      <span>Scroll to explore</span>
+    </div>
+    <div class="hero-stat-row">
+      <div class="h-stat"><span class="h-stat-num">280+</span><span class="h-stat-label">Properties Sold</span></div>
+      <div class="h-stat"><span class="h-stat-num">14</span><span class="h-stat-label">Years Active</span></div>
+      <div class="h-stat"><span class="h-stat-num">$1.8B</span><span class="h-stat-label">Total Sales</span></div>
+    </div>
+    <div class="hero-cta-wrap">
+      <a href="#listings" class="btn-blush">View Listings</a>
+      <a href="#contact" class="btn-light">Book a Call</a>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mq">
+  <div class="mq-track">
+    <span class="mq-item">The Hamptons</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Luxury Estates</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Waterfront Homes</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Private Sales</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Since 2010</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Off-Market Access</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">The Hamptons</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Luxury Estates</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Waterfront Homes</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Private Sales</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Since 2010</span><span class="mq-mark">&diams;</span>
+    <span class="mq-item">Off-Market Access</span><span class="mq-mark">&diams;</span>
+  </div>
+</div>
+
+<!-- LISTINGS -->
+<section id="listings">
+  <div class="listings-header">
+    <div>
+      <div class="sec-eyebrow gf">Current Properties</div>
+      <h2 class="sec-h gf">Featured <em>Listings</em></h2>
+    </div>
+    <div class="listings-filter gf">
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Buy</button>
+      <button class="filter-btn">Sell</button>
+      <button class="filter-btn">Off-Market</button>
+    </div>
+  </div>
+  <div class="listings-mag">
+    <div class="lm-item gs">
+      <div class="lm-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#C4A898 0%,#8C6858 50%,#5C3C2C 100%);"></div>
+      <div class="lm-tint"></div>
+      <div class="lm-info">
+        <div class="lm-status">Available Now</div>
+        <div class="lm-name">East Hampton Estate</div>
+        <div class="lm-price">$6,400,000</div>
+        <div class="lm-meta">5 bed &nbsp;&middot;&nbsp; 6 bath &nbsp;&middot;&nbsp; 7,200 sq ft</div>
+      </div>
+      <div class="lm-badge new">New</div>
+    </div>
+    <div class="lm-item gf">
+      <div class="lm-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#B8C8B0 0%,#7A8A70 60%,#4A5A42 100%);"></div>
+      <div class="lm-tint"></div>
+      <div class="lm-info">
+        <div class="lm-status">Off Market</div>
+        <div class="lm-name">Sag Harbor Retreat</div>
+        <div class="lm-price">$3,750,000</div>
+        <div class="lm-meta">4 bed &nbsp;&middot;&nbsp; 4 bath</div>
+      </div>
+      <div class="lm-badge excl">Exclusive</div>
+    </div>
+    <div class="lm-item gf">
+      <div class="lm-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#D4C0B0 0%,#A08878 60%,#6C5848 100%);"></div>
+      <div class="lm-tint"></div>
+      <div class="lm-info">
+        <div class="lm-status">Available</div>
+        <div class="lm-name">Bridgehampton Villa</div>
+        <div class="lm-price">$5,100,000</div>
+        <div class="lm-meta">5 bed &nbsp;&middot;&nbsp; 5 bath</div>
+      </div>
+    </div>
+    <div class="lm-item gf">
+      <div class="lm-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#C8B8A8 0%,#907868 60%,#604840 100%);"></div>
+      <div class="lm-tint"></div>
+      <div class="lm-info">
+        <div class="lm-status">Price Reduced</div>
+        <div class="lm-name">Montauk Bluff House</div>
+        <div class="lm-price">$4,200,000</div>
+        <div class="lm-meta">4 bed &nbsp;&middot;&nbsp; 4 bath</div>
+      </div>
+      <div class="lm-badge new">Reduced</div>
+    </div>
+    <div class="lm-item gf">
+      <div class="lm-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#B4C0AC 0%,#788470 60%,#485440 100%);"></div>
+      <div class="lm-tint"></div>
+      <div class="lm-info">
+        <div class="lm-status">Available</div>
+        <div class="lm-name">Water Mill Cottage</div>
+        <div class="lm-price">$2,800,000</div>
+        <div class="lm-meta">3 bed &nbsp;&middot;&nbsp; 3 bath</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHILOSOPHY -->
+<section id="philosophy">
+  <div class="phil-left">
+    <div class="phil-label gf">Our Approach</div>
+    <h2 class="phil-h gf">Homes chosen<br>with <em>care.</em></h2>
+    <p class="phil-body gf">Haven was built on the idea that real estate is not a transaction — it is a deeply personal journey. We take time to understand not just your requirements, but your vision for the life you want to build.</p>
+    <p class="phil-body gf">Every listing in our portfolio is personally vetted. Every client relationship is treated as a privilege, not a pipeline.</p>
+    <div class="phil-sig gf">Isabelle Fontaine<small>Founder &amp; Principal Agent</small></div>
+  </div>
+  <div class="phil-right gf">
+    <div class="phil-card">
+      <div class="pc-num">01</div>
+      <div class="pc-title">Curation</div>
+      <div class="pc-desc">Only properties that meet our standard of beauty, quality, and value make our portfolio.</div>
+    </div>
+    <div class="phil-card">
+      <div class="pc-num">02</div>
+      <div class="pc-title">Discretion</div>
+      <div class="pc-desc">Every transaction is handled with complete confidentiality and care.</div>
+    </div>
+    <div class="phil-card">
+      <div class="pc-num">03</div>
+      <div class="pc-title">Access</div>
+      <div class="pc-desc">Off-market properties, private sales, and exclusive opportunities for our clients.</div>
+    </div>
+    <div class="phil-card">
+      <div class="pc-num">04</div>
+      <div class="pc-title">Partnership</div>
+      <div class="pc-desc">We work for you — not for the commission. Your outcome is our measure of success.</div>
+    </div>
+    <div class="phil-stat-row">
+      <div class="psr-item"><span class="psr-num" data-target="280" data-sfx="+">0</span><span class="psr-label">Homes Sold</span></div>
+      <div class="psr-item"><span class="psr-num" data-target="99" data-sfx="%">0</span><span class="psr-label">Satisfaction</span></div>
+      <div class="psr-item"><span class="psr-num" data-target="14">0</span><span class="psr-label">Years</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="svc-header">
+    <div>
+      <div class="sec-eyebrow gf">What We Offer</div>
+      <h2 class="sec-h gf">Our <em>Services</em></h2>
+    </div>
+    <p class="svc-note gf">Full-service representation for buyers, sellers, and investors across the Hamptons and greater New York.</p>
+  </div>
+  <div class="svc-list">
+    <div class="svc-row gf"><span class="svc-idx">01</span><div class="svc-mid"><div class="svc-name">Buyer Representation</div><div class="svc-sub">On-market &amp; off-market search</div></div><div class="svc-price">Full Service</div><span class="svc-arr">&rarr;</span></div>
+    <div class="svc-row gf"><span class="svc-idx">02</span><div class="svc-mid"><div class="svc-name">Seller Representation</div><div class="svc-sub">Bespoke marketing &amp; staging</div></div><div class="svc-price">Full Service</div><span class="svc-arr">&rarr;</span></div>
+    <div class="svc-row gf"><span class="svc-idx">03</span><div class="svc-mid"><div class="svc-name">Off-Market Access</div><div class="svc-sub">Exclusive private listings</div></div><div class="svc-price">Members Only</div><span class="svc-arr">&rarr;</span></div>
+    <div class="svc-row gf"><span class="svc-idx">04</span><div class="svc-mid"><div class="svc-name">Investment Advisory</div><div class="svc-sub">Portfolio strategy &amp; analysis</div></div><div class="svc-price">By Consultation</div><span class="svc-arr">&rarr;</span></div>
+    <div class="svc-row gf"><span class="svc-idx">05</span><div class="svc-mid"><div class="svc-name">Relocation Services</div><div class="svc-sub">Full concierge support</div></div><div class="svc-price">Full Service</div><span class="svc-arr">&rarr;</span></div>
+    <div class="svc-row gf"><span class="svc-idx">06</span><div class="svc-mid"><div class="svc-name">Estate Management</div><div class="svc-sub">Ongoing property care</div></div><div class="svc-price">Monthly Retainer</div><span class="svc-arr">&rarr;</span></div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="team-header">
+    <div class="sec-eyebrow gf" style="justify-content:center;">The People</div>
+    <h2 class="sec-h gf">Meet the <em>Team</em></h2>
+  </div>
+  <div class="team-grid">
+    <div class="agent-card gs">
+      <div class="agent-photo">
+        <div class="agent-photo-bg" style="background:linear-gradient(160deg,#E8C4BC,#C08878);"><span class="agent-initial">I</span></div>
+        <div class="agent-tint"></div>
+      </div>
+      <div class="agent-info">
+        <div class="agent-name">Isabelle Fontaine</div>
+        <div class="agent-role">Founder &bull; Principal Agent</div>
+        <div class="agent-bio">14 years placing clients in the Hamptons' finest homes. Harvard-educated, instinct-driven.</div>
+        <div class="agent-stats">
+          <div class="ag-stat"><span class="ag-stat-num">$1.2B</span><span class="ag-stat-label">Sales</span></div>
+          <div class="ag-stat"><span class="ag-stat-num">140+</span><span class="ag-stat-label">Sold</span></div>
+          <div class="ag-stat"><span class="ag-stat-num">14yr</span><span class="ag-stat-label">Exp</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="agent-card gs">
+      <div class="agent-photo">
+        <div class="agent-photo-bg" style="background:linear-gradient(160deg,#B8C4B0,#7A8A70);"><span class="agent-initial">L</span></div>
+        <div class="agent-tint"></div>
+      </div>
+      <div class="agent-info">
+        <div class="agent-name">Luca Marchetti</div>
+        <div class="agent-role">Senior Agent &bull; Buyer Specialist</div>
+        <div class="agent-bio">Fluent in four languages. Specialist in international relocation and waterfront acquisitions.</div>
+        <div class="agent-stats">
+          <div class="ag-stat"><span class="ag-stat-num">$480M</span><span class="ag-stat-label">Sales</span></div>
+          <div class="ag-stat"><span class="ag-stat-num">80+</span><span class="ag-stat-label">Sold</span></div>
+          <div class="ag-stat"><span class="ag-stat-num">9yr</span><span class="ag-stat-label">Exp</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="agent-card gs">
+      <div class="agent-photo">
+        <div class="agent-photo-bg" style="background:linear-gradient(160deg,#D4C0B0,#A08878);"><span class="agent-initial">S</span></div>
+        <div class="agent-tint"></div>
+      </div>
+      <div class="agent-info">
+        <div class="agent-name">Sophie Aldridge</div>
+        <div class="agent-role">Investment Advisor</div>
+        <div class="agent-bio">Former Goldman Sachs analyst. Brings rigorous financial strategy to every property decision.</div>
+        <div class="agent-stats">
+          <div class="ag-stat"><span class="ag-stat-num">$320M</span><span class="ag-stat-label">Portfolio</span></div>
+          <div class="ag-stat"><span class="ag-stat-num">60+</span><span class="ag-stat-label">Clients</span></div>
+          <div class="ag-stat"><span class="ag-stat-num">7yr</span><span class="ag-stat-label">Exp</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="sec-eyebrow gf" style="justify-content:flex-start;margin-bottom:14px;">Client Words</div>
+  <h2 class="sec-h gf" style="margin-bottom:60px;">What they <em>say</em></h2>
+  <div class="testi-wrap">
+    <div class="testi-left-col gfl">
+      <div class="testi-featured">
+        <div class="tf-stars" style="color:var(--blush3);">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="tf-q">"Isabelle didn't just find us a house. She found us a way of life we didn't know we were missing. Haven is in a category entirely its own."</p>
+        <div class="tf-rule"></div>
+        <div class="tf-name">The Whitmore Family</div>
+        <div class="tf-role">East Hampton &mdash; $5.8M Purchase</div>
+      </div>
+    </div>
+    <div class="testi-right-col gfr">
+      <div class="testi-mini">
+        <div class="tm-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="tm-q">"Sold our Sag Harbor home for full ask in 11 days. Luca's buyer network is extraordinary — we never even needed to list publicly."</p>
+        <div class="tm-name">Robert & Claire Dunning</div>
+        <div class="tm-role">Sag Harbor &mdash; $3.2M Sale</div>
+      </div>
+      <div class="testi-mini">
+        <div class="tm-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="tm-q">"Sophie structured our portfolio acquisition brilliantly. Three properties in 18 months, all performing above projection."</p>
+        <div class="tm-name">Dr. Marcus Elliot</div>
+        <div class="tm-role">Investment Client &mdash; $4.1M Portfolio</div>
+      </div>
+      <div class="testi-mini">
+        <div class="tm-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="tm-q">"Relocating from London felt impossible. Haven made every step feel effortless and personal. Truly above and beyond."</p>
+        <div class="tm-name">Amara & James Osei</div>
+        <div class="tm-role">Relocation &mdash; Bridgehampton</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-wrap">
+    <div class="contact-left">
+      <div class="ci-label gf">Get in Touch</div>
+      <h2 class="ci-title gf">Let's find<br>your <em>Haven.</em></h2>
+      <p class="ci-body gf">Every great home begins with a conversation. Book a private consultation with our team — no obligation, just genuine guidance from people who care.</p>
+      <div class="ci-items gf">
+        <div class="ci-item"><div class="ci-dot"></div><div class="ci-text"><small>Phone</small>(631) 555-0214</div></div>
+        <div class="ci-item"><div class="ci-dot"></div><div class="ci-text"><small>Email</small>hello@havenrealty.com</div></div>
+        <div class="ci-item"><div class="ci-dot"></div><div class="ci-text"><small>Office</small>14 Jobs Lane, Southampton, NY</div></div>
+        <div class="ci-item"><div class="ci-dot"></div><div class="ci-text"><small>Hours</small>Mon–Sat 9am–7pm · Sun by appt</div></div>
+      </div>
+    </div>
+    <div class="contact-form-wrap gfr">
+      <div class="cf-title">Send an Enquiry</div>
+      <form class="cf-form" id="contactForm" onsubmit="handleForm(event)">
+        <div class="cf-row">
+          <div class="cf-g"><span class="cf-label">First Name</span><input class="cf-input" type="text" placeholder="First name" required></div>
+          <div class="cf-g"><span class="cf-label">Last Name</span><input class="cf-input" type="text" placeholder="Last name" required></div>
+        </div>
+        <div class="cf-row">
+          <div class="cf-g"><span class="cf-label">Email</span><input class="cf-input" type="email" placeholder="your@email.com" required></div>
+          <div class="cf-g"><span class="cf-label">Phone</span><input class="cf-input" type="tel" placeholder="(631)"></div>
+        </div>
+        <div class="cf-row">
+          <div class="cf-g cf-full"><span class="cf-label">I'm interested in</span>
+            <select class="cf-select">
+              <option>Buying a property</option>
+              <option>Selling a property</option>
+              <option>Off-market access</option>
+              <option>Investment advice</option>
+              <option>Relocation services</option>
+            </select>
+          </div>
+        </div>
+        <div class="cf-row">
+          <div class="cf-g cf-full"><span class="cf-label">Budget</span>
+            <select class="cf-select">
+              <option>$1M – $3M</option>
+              <option>$3M – $6M</option>
+              <option>$6M – $10M</option>
+              <option>$10M+</option>
+            </select>
+          </div>
+        </div>
+        <div class="cf-row">
+          <div class="cf-g cf-full"><span class="cf-label">Message</span><textarea class="cf-area" placeholder="Tell us about your ideal home..."></textarea></div>
+        </div>
+        <button type="submit" class="btn-submit">Send Enquiry &rarr;</button>
+      </form>
+      <div id="formSuccess">
+        <div class="fs-icon">&#10022;</div>
+        <div class="fs-title">We'll be in touch</div>
+        <div class="fs-body">Thank you for reaching out. A member of our team will contact you within 24 hours.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <span class="f-brand-name">HAVEN</span>
+      <span class="f-brand-sub">Luxury Real Estate</span>
+      <p class="f-tagline">The Hamptons' most trusted name in luxury residential real estate since 2010.</p>
+      <div class="f-socials">
+        <a href="#" class="f-soc">IG</a>
+        <a href="#" class="f-soc">FB</a>
+        <a href="#" class="f-soc">LI</a>
+        <a href="#" class="f-soc">YT</a>
+      </div>
+    </div>
+    <div class="f-col">
+      <h4>Properties</h4>
+      <a href="#">East Hampton</a>
+      <a href="#">Southampton</a>
+      <a href="#">Sag Harbor</a>
+      <a href="#">Montauk</a>
+      <a href="#">Off-Market</a>
+    </div>
+    <div class="f-col">
+      <h4>Company</h4>
+      <a href="#">About Haven</a>
+      <a href="#">Our Team</a>
+      <a href="#">Testimonials</a>
+      <a href="#">Press</a>
+      <a href="#">Careers</a>
+    </div>
+    <div class="f-col">
+      <h4>Visit</h4>
+      <address>14 Jobs Lane<br>Southampton, NY 11968<br><br>Mon–Sat: 9am–7pm<br>Sunday: By appointment</address>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="f-copy">&copy; 2025 Haven Luxury Real Estate. All rights reserved. DRE #09876543</div>
+    <div class="f-legal">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Fair Housing</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── SPLIT CURTAIN PRELOADER ── */
+window.addEventListener('DOMContentLoaded',()=>{
+  const pre=document.getElementById('preloader');
+  // Step 1: show words
+  setTimeout(()=>pre.classList.add('active'),100);
+  // Step 2: open curtains
+  setTimeout(()=>pre.classList.add('open'),2000);
+  // Step 3: remove
+  setTimeout(()=>{pre.style.display='none';},3000);
+});
+
+/* ── CURSOR ── */
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+window.addEventListener('mousemove',e=>{
+  gsap.to(cur,{x:e.clientX,y:e.clientY,duration:.1});
+  gsap.to(ring,{x:e.clientX,y:e.clientY,duration:.22});
+});
+document.querySelectorAll('a,button,input,select,textarea,.lm-item,.agent-card,.testi-mini,.svc-row,.phil-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+
+/* ── PROGRESS + NAV SCROLL ── */
+window.addEventListener('scroll',()=>{
+  document.getElementById('prog').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>80);
+});
+
+/* ── GSAP REVEALS ── */
+gsap.utils.toArray('.gf').forEach(el=>{
+  gsap.to(el,{opacity:1,y:0,duration:1,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 90%'}});
+});
+gsap.utils.toArray('.gfl').forEach(el=>{
+  gsap.to(el,{opacity:1,x:0,duration:1.1,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 88%'}});
+});
+gsap.utils.toArray('.gfr').forEach(el=>{
+  gsap.to(el,{opacity:1,x:0,duration:1.1,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 88%'}});
+});
+gsap.utils.toArray('.gs').forEach(el=>{
+  gsap.to(el,{opacity:1,scale:1,duration:1,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 90%'}});
+});
+
+/* ── LISTING STAGGER ── */
+gsap.utils.toArray('.lm-item').forEach((el,i)=>{
+  gsap.from(el,{opacity:0,y:24,duration:.8,delay:i*.08,ease:'power2.out',
+    scrollTrigger:{trigger:'.listings-mag',start:'top 88%'}});
+});
+
+/* ── HERO PARALLAX ── */
+gsap.to('.hero-h1',{y:-50,ease:'none',
+  scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:1.8}});
+gsap.to('.hero-bg-circle',{y:-80,ease:'none',
+  scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:2}});
+gsap.to('.hero-bg-circle2',{y:-60,ease:'none',
+  scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:2.5}});
+
+/* ── COUNTERS ── */
+let counted=false;
+ScrollTrigger.create({trigger:'.phil-stat-row',start:'top 88%',onEnter:()=>{
+  if(counted)return; counted=true;
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const t=parseInt(el.getAttribute('data-target'));
+    const sfx=el.getAttribute('data-sfx')||'';
+    gsap.to({v:0},{v:t,duration:2,ease:'power2.out',
+      onUpdate:function(){el.textContent=Math.floor(this.targets()[0].v)+sfx;}});
+  });
+}});
+
+/* ── FILTER BUTTONS ── */
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+/* ── MAGNETIC BUTTONS ── */
+document.querySelectorAll('.btn-blush,.btn-submit,.nav-btn').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    const x=(e.clientX-r.left-r.width/2)*.18;
+    const y=(e.clientY-r.top-r.height/2)*.18;
+    gsap.to(btn,{x,y,duration:.3,ease:'power2.out'});
+  });
+  btn.addEventListener('mouseleave',()=>gsap.to(btn,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'}));
+});
+
+/* ── LISTING 3D TILT ── */
+document.querySelectorAll('.lm-item').forEach(el=>{
+  el.addEventListener('mousemove',e=>{
+    const r=el.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    gsap.to(el,{rotateY:x*4,rotateX:-y*4,transformPerspective:900,scale:1.01,duration:.4});
+  });
+  el.addEventListener('mouseleave',()=>gsap.to(el,{rotateY:0,rotateX:0,scale:1,duration:.6}));
+});
+
+/* ── CONTACT FORM ── */
+function handleForm(e){
+  e.preventDefault();
+  gsap.to('#contactForm',{opacity:0,y:-12,duration:.3,onComplete:()=>{
+    document.getElementById('contactForm').style.display='none';
+    document.getElementById('formSuccess').style.display='block';
+    gsap.from('#formSuccess',{opacity:0,y:16,duration:.5});
+  }});
+}
+</script>
+</body>
+</html>
